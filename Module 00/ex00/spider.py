@@ -1,55 +1,60 @@
+import argparse
 import os
 import requests
 from bs4 import BeautifulSoup
-import argparse
+from urllib.parse import urljoin, urlparse
 
-def download_images(url, save_path, extensions, depth=0, max_depth=5):
+def download_image(url, path):
     response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    images = soup.find_all('img')
-    urls = [image.get('src') for image in images]
-    urls = [url for url in urls if any(url.endswith(ext) for ext in extensions)]
+    if response.status_code == 200:
+        filename = os.path.join(path, url.split('/')[-1])
+        with open(filename, 'wb') as f:
+            f.write(response.content)
+        print(f"Downloaded: {filename}")
 
-    if not os.path.exists(save_path):
-        os.makedirs(save_path)
-
-    for url in urls:
-        download_image(url, save_path)
-
-    if depth >= max_depth:
+def spider(url, max_depth, current_depth=0, path='./data/', visited=None):
+    if visited is None:
+        visited = set()
+    
+    if current_depth > max_depth or url in visited:
         return
+    
+    visited.add(url)
+    
+    try:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+        
+        for img in soup.find_all('img'):
+            img_url = urljoin(url, img.get('src'))
+            if any(img_url.lower().endswith(ext) for ext in ['.jpg', '.jpeg', '.png', '.gif', '.bmp']):
+                download_image(img_url, path)
+        
+        if current_depth < max_depth:
+            print(f"Depth: {current_depth} - Visiting: {url}")
+            for link in soup.find_all('a'):
+                next_url = urljoin(url, link.get('href'))
+                if urlparse(next_url).netloc == urlparse(url).netloc:
+                    spider(next_url, max_depth, current_depth + 1, path, visited)
+    
+    except requests.RequestException as e:
+        print(f"Error fetching {url}: {e}")
 
-    links = soup.find_all('a')
-    links = [link.get('href') for link in links]
-    links = [link for link in links if link is not None and link.startswith(url)]
-
-    for link in links:
-        download_images(link, save_path, extensions, depth=depth+1, max_depth=max_depth)
-
-def download_image(url, save_path):
-    response = requests.get(url)
-    filename = os.path.join(save_path, os.path.basename(url))
-    with open(filename, 'wb') as f:
-        f.write(response.content)
-
-if __name__ == '__main__':
-
-    DEFAULT_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.bmp']
-    DEFAULT_MAX_DEPTH = 5
-    DEFAULT_SAVE_PATH = './data/'
-
-    parser = argparse.ArgumentParser(description='Spider program to extract all images from a website')
-    parser.add_argument('url', type=str, help='URL to crawl')
-    parser.add_argument('-r', action='store_true', help='recursively download images')
-    parser.add_argument('-l', type=int, help='maximum depth level of recursion')
-    parser.add_argument('-p', type=str, help='path to save downloaded images')
+def main():
+    parser = argparse.ArgumentParser(description="Spider program to extract images from websites")
+    parser.add_argument("url", help="The URL to start crawling from")
+    parser.add_argument("-r", action="store_true", help="Recursively download images")
+    parser.add_argument("-l", type=int, default=5, help="Maximum depth level for recursive download")
+    parser.add_argument("-p", default="./data/", help="Path to save downloaded files")
+    
     args = parser.parse_args()
-
-    save_path = args.p or DEFAULT_SAVE_PATH
-    extensions = DEFAULT_EXTENSIONS
-    max_depth = args.l or DEFAULT_MAX_DEPTH
-
+    
+    os.makedirs(args.p, exist_ok=True)
+    
     if args.r:
-        download_images(args.url, save_path, extensions, max_depth=max_depth)
+        spider(args.url, args.l, path=args.p)
     else:
-        download_images(args.url, save_path, extensions, depth=0, max_depth=0)
+        spider(args.url, 0, path=args.p)
+
+if __name__ == "__main__":
+    main()
