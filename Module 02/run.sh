@@ -29,7 +29,8 @@ if [ -z "$ONION_HOSTNAME" ]; then
     echo "Failed to retrieve .onion hostname. Please check the container logs."
 else
     echo "Your .onion hostname is: $ONION_HOSTNAME"
-    echo "You can now access your hidden service through the Tor network using this address."
 fi
+
+echo "You can ssh into the container using the following ip address: $(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_NAME)"
 
 echo "Setup complete!"

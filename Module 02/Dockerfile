@@ -2,8 +2,9 @@ FROM nginx:alpine
 
 RUN apk add --no-cache tor openssh
 
+RUN adduser -D lharba && echo "lharba:password" | chpasswd
+
 RUN ssh-keygen -A
-RUN echo "root:passwordlharba" | chpasswd
 
 COPY sshd_config /etc/ssh/sshd_config
 
