@@ -1,0 +1,62 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Tor Hidden Service</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            transition: background-color 0.5s;
+        }
+        .container {
+            text-align: center;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 2rem;
+            border-radius: 10px;
+        }
+        button {
+            font-size: 1rem;
+            margin: 0 0.5rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+        }
+        #counter {
+            font-size: 2rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to my Interactive Tor Hidden Service!</h1>
+        <p>This is a sample interactive page served through Tor.</p>
+        <div id="counter">0</div>
+        <button onclick="changeCount(-1)">Decrease</button>
+        <button onclick="changeCount(1)">Increase</button>
+        <br><br>
+        <button onclick="changeBackgroundColor()">Change Background Color</button>
+    </div>
+
+    <script>
+        let count = 0;
+        const counterElement = document.getElementById('counter');
+
+        function changeCount(amount) {
+            count += amount;
+            counterElement.textContent = count;
+        }
+
+        function changeBackgroundColor() {
+            const randomColor = Math.floor(Math.random()*16777215).toString(16);
+            document.body.style.backgroundColor = "#" + randomColor;
+        }
+    </script>
+</body>
+</html>
