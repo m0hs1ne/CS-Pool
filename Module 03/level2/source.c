@@ -4,12 +4,12 @@
 #include <stdbool.h>
 
 void no(){
-    printf("Nope.\n");
+    puts("Nope.\n");
     exit(1);
 }
 
 void ok(){
-    printf("Good job.\n");
+    puts("Good job.\n");
     return;
 }
 
