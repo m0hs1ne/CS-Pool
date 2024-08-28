@@ -45,12 +45,11 @@ def store_key(key_file):
 
 def hotp(secret, counter):
     key = bytes.fromhex(secret)
-    counter_bytes = struct.pack('>Q', counter)
-    hmac_obj = hmac.new(key, counter_bytes, hashlib.sha1)
-    hmac_digest = hmac_obj.digest()
+    counter_bytes = counter.to_bytes(8, byteorder='big')
+    hmac_digest = hmac.new(key, counter_bytes, hashlib.sha1).digest()
     
     offset = hmac_digest[-1] & 0xf
-    code = struct.unpack('>I', hmac_digest[offset:offset+4])[0] & 0x7fffffff
+    code = int.from_bytes(hmac_digest[offset:offset+4], byteorder='big') & 0x7fffffff
     return str(code)[-6:].zfill(6)
 
 def generate_otp(key_file):
