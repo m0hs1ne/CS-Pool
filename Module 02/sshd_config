@@ -1,2 +1,4 @@
 Port 4242
 PermitRootLogin no
+PasswordAuthentication no
+Protocol 2

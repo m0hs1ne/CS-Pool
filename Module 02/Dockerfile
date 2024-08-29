@@ -14,7 +14,4 @@ COPY torrc /etc/tor/torrc
 
 COPY index.html /usr/share/nginx/html
 
-EXPOSE 80
-EXPOSE 4242
-
 CMD nginx && /usr/sbin/sshd && tor
