@@ -1,0 +1,10 @@
+services:
+  adversary:
+    image: adversary
+    container_name: adversary
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge
